@@ -95,30 +95,24 @@ def linechart(request):
 
 
 def radarplot(request):
-    topic = 'oil'
+    topic = request.GET.get('topic', 'oil').lower()
     data = list(collection.find({'topic': topic}, {'_id': False}))
-    continent_relevance = defaultdict(list)
 
+    continent_relevance = defaultdict(list)
     for item in data:
         region = item.get('region', 'Unknown')  
         relevance = item.get('relevance', 0)
-        if not isinstance(relevance, (int, float)):
-            continue
+        if isinstance(relevance, (int, float)):  
+            continent_relevance[region].append(relevance)
 
-        continent_relevance[region].append(relevance)
-    result = {}
-    for continent, relevance_values in continent_relevance.items():
-        avg_relevance = sum(relevance_values) / len(relevance_values) if relevance_values else 0
-        result[continent] = avg_relevance
-    labels = list(result.keys())  
-    relevance_data = list(result.values()) 
+    result = {continent: (sum(values) / len(values)) for continent, values in continent_relevance.items() if values}
 
     response_data = {
-        'labels': labels,
+        'labels': list(result.keys()),  
         'datasets': [
             {
-                'label': topic,  # Default topic is 'Oil'
-                'data': relevance_data,
+                'label': topic,  
+                'data': list(result.values()),
                 'backgroundColor': 'rgba(75, 192, 192, 0.2)',
                 'borderColor': 'rgba(75, 192, 192, 1)',
                 'borderWidth': 2,

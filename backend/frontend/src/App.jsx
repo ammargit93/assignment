@@ -2,18 +2,20 @@ import React, { useState, useEffect } from 'react';
 import Card from './components/Card';
 import BarChart from './components/BarChart';
 import LineChart from './components/LineChart';
+import RadarChart from './components/RadarChart';
 import './App.css';
 
 function App() {
   const [selectedYearBar, setSelectedYearBar] = useState('2016');
   const [selectedSector, setSelectedSector] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState('oil'); 
   const [barChartData, setBarChartData] = useState({ relevance: [], likelihood: [] });
   const [barChartLabels, setBarChartLabels] = useState([]);
   const [lineChartData, setLineChartData] = useState({ years: [], intensity: [] });
+  const [radarChartData, setRadarChartData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // List of sectors for the dropdown
   const sectors = [
     'Energy', 'Environment', '', 'Government', 'Aerospace & defence',
     'Manufacturing', 'Retail', 'Financial services', 'Support services',
@@ -26,7 +28,6 @@ function App() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-
     fetch(`http://localhost:8000/barchart/?year=${selectedYearBar}&sector=${selectedSector}`)
       .then((response) => {
         if (!response.ok) throw new Error('Network response was not ok');
@@ -47,7 +48,6 @@ function App() {
   useEffect(() => {
     setLoading(true);
     setError(null);
-
     fetch(`http://localhost:8000/linechart/?sector=${selectedSector}`)
       .then((response) => {
         if (!response.ok) throw new Error('Network response was not ok');
@@ -63,6 +63,25 @@ function App() {
       .catch((error) => setError(error));
   }, [selectedSector]);
 
+  // Fetch data for RadarChart
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch(`http://localhost:8000/radarplot/?topic=${selectedTopic}`)
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Radar Chart Data:", data); // Debugging
+        setRadarChartData(data);
+        setLoading(false);
+      })
+      .catch((error) => setError(error));
+  }, [selectedTopic]);
+  
+  
+
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">Error: {error.message}</div>;
 
@@ -70,7 +89,7 @@ function App() {
     <div className="App">
       <h1>Interactive Charts</h1>
 
-      {/* Bar Chart Card */}
+      {/* Bar Chart */}
       <Card>
         <div className="card-header">
           <h2>Relevance and Likelihood by Region ({selectedYearBar})</h2>
@@ -87,7 +106,7 @@ function App() {
         <BarChart data={barChartData} labels={barChartLabels} />
       </Card>
 
-      {/* Line Chart Card */}
+      {/* Line Chart */}
       <Card>
         <div className="card-header">
           <h2>Average Intensity Over Time</h2>
@@ -107,6 +126,29 @@ function App() {
         ) : (
           <div className="error">No data available for Line Chart</div>
         )}
+      </Card>
+
+      {/* Radar Chart */}
+      <Card>
+        <div className="card-header">
+          <h2>Average Intensity Over Regions</h2>
+          <select
+            className="topic-select"
+            value={selectedTopic}
+            onChange={(e) => setSelectedTopic(e.target.value)}
+          >
+            <option value="oil">Oil</option>
+            {sectors.map((topic, index) => (
+              <option key={index} value={topic}>{topic || 'Uncategorized'}</option>
+            ))}
+          </select>
+        </div>
+        {radarChartData && radarChartData.labels.length > 0 && radarChartData.datasets.length > 0 ? (
+          <RadarChart data={radarChartData} />
+        ) : (
+          <div className="error">No data available for Radar Chart</div>
+        )}
+
       </Card>
     </div>
   );

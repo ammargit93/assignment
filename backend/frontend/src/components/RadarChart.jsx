@@ -6,76 +6,55 @@ Chart.register(RadarController, RadialLinearScale, PointElement, LineElement, Fi
 
 const RadarChart = ({ data }) => {
   const chartRef = useRef(null);
+  const chartInstanceRef = useRef(null);
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    if (!chartRef.current || !data) return;
     const ctx = chartRef.current.getContext('2d');
 
-    // Destroy previous chart instance if it exists
-    if (chartRef.current.chart) {
-      chartRef.current.chart.destroy();
+    // Destroy previous instance
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
     }
 
-    // Create a new Radar Chart
-    chartRef.current.chart = new Chart(ctx, {
+    // Ensure proper data structure
+    const radarData = {
+      labels: data.labels,
+      datasets: data.datasets.map(dataset => ({
+        label: dataset.label,
+        data: dataset.data,
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+        pointBorderColor: '#fff',
+      })),
+    };
+
+    // Create new Radar Chart
+    chartInstanceRef.current = new Chart(ctx, {
       type: 'radar',
-      data: data,
+      data: radarData,
       options: {
         responsive: true,
-        maintainAspectRatio: false, // Disable aspect ratio to allow full width
+        maintainAspectRatio: false,
         scales: {
           r: {
             beginAtZero: true,
-            grid: {
-              color: 'rgba(0, 0, 0, 0.1)',
-            },
-            angleLines: {
-              color: 'rgba(0, 0, 0, 0.1)',
-            },
-            pointLabels: {
-              font: {
-                size: 14,
-                family: 'Roboto',
-              },
-            },
-          },
-        },
-        plugins: {
-          tooltip: {
-            enabled: true,
-            bodyFont: {
-              family: 'Roboto',
-              size: 12,
-            },
-            titleFont: {
-              family: 'Roboto',
-              size: 14,
-            },
-          },
-          legend: {
-            position: 'top',
-            labels: {
-              font: {
-                family: 'Roboto',
-                size: 14,
-              },
-            },
           },
         },
       },
     });
 
-    // Cleanup function to destroy the chart instance
     return () => {
-      if (chartRef.current.chart) {
-        chartRef.current.chart.destroy();
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.destroy();
       }
     };
   }, [data]);
 
   return (
-    <div style={{ width: '100%', height: '400px' }}> {/* Full-width container */}
-      <canvas ref={chartRef} style={{ width: '100%', height: '100%' }}></canvas> {/* Full-width canvas */}
+    <div style={{ width: '100%', height: '400px' }}>
+      <canvas ref={chartRef}></canvas>
     </div>
   );
 };
