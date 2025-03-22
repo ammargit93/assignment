@@ -22,4 +22,5 @@ urlpatterns = [
     path('barchart/', views.barchart, name='barchart'),
     path('linechart/', views.linechart, name='linechart'),
     path('radarplot/', views.radarplot, name='radarplot'),
+    path('piechart/', views.piechart, name='piechart'),
 ]

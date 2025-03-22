@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from pymongo import MongoClient
-from collections import defaultdict
+from collections import defaultdict, Counter
 from django.http import JsonResponse
 
 client = MongoClient('mongodb://localhost:27017/')
@@ -104,9 +104,7 @@ def radarplot(request):
         relevance = item.get('relevance', 0)
         if isinstance(relevance, (int, float)):  
             continent_relevance[region].append(relevance)
-
     result = {continent: (sum(values) / len(values)) for continent, values in continent_relevance.items() if values}
-
     response_data = {
         'labels': list(result.keys()),  
         'datasets': [
@@ -119,5 +117,16 @@ def radarplot(request):
             },
         ],
     }
-
     return JsonResponse(response_data)
+
+
+
+def piechart(request):
+    country = request.GET.get('country', '')
+    query = {}
+    if country: 
+        query['country'] = country
+    data = list(collection.find(query, {'_id': 0, 'pestle': 1}))
+    pestle_counts = Counter(item['pestle'] for item in data if 'pestle' in item and item['pestle'])
+    pie_data = [{"label": key, "value": value} for key, value in pestle_counts.items()]
+    return JsonResponse({"status": "success", "data": pie_data}, safe=False)

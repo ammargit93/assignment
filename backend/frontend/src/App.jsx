@@ -3,16 +3,19 @@ import Card from './components/Card';
 import BarChart from './components/BarChart';
 import LineChart from './components/LineChart';
 import RadarChart from './components/RadarChart';
+import PieChart from './components/PieChart'; // Import PieChart
 import './App.css';
 
 function App() {
   const [selectedYearBar, setSelectedYearBar] = useState('2016');
   const [selectedSector, setSelectedSector] = useState('');
-  const [selectedTopic, setSelectedTopic] = useState('oil'); 
+  const [selectedTopic, setSelectedTopic] = useState('oil');
+  const [selectedCountry, setSelectedCountry] = useState(''); // State for selected country
   const [barChartData, setBarChartData] = useState({ relevance: [], likelihood: [] });
   const [barChartLabels, setBarChartLabels] = useState([]);
   const [lineChartData, setLineChartData] = useState({ years: [], intensity: [] });
   const [radarChartData, setRadarChartData] = useState(null);
+  const [pieChartData, setPieChartData] = useState([]); // State for PieChart data
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -24,11 +27,25 @@ function App() {
     'Transport', 'Water', 'Media & entertainment'
   ];
 
+  const countries = [
+    'United States of America', 'Mexico', '', 'Nigeria', 'Lebanon',
+    'Russia', 'Saudi Arabia', 'Angola', 'Egypt', 'South Africa',
+    'India', 'Ukraine', 'Azerbaijan', 'China', 'Colombia', 'Niger',
+    'Libya', 'Brazil', 'Mali', 'Indonesia', 'Iraq', 'Iran',
+    'South Sudan', 'Venezuela', 'Burkina Faso', 'Germany',
+    'United Kingdom', 'Kuwait', 'Canada', 'Argentina', 'Japan',
+    'Austria', 'Spain', 'Estonia', 'Hungary', 'Australia', 'Morocco',
+    'Greece', 'Qatar', 'Oman', 'Liberia', 'Denmark', 'Malaysia',
+    'Jordan', 'Syria', 'Ethiopia', 'Norway', 'Ghana', 'Kazakhstan',
+    'Pakistan', 'Gabon', 'United Arab Emirates', 'Algeria', 'Turkey',
+    'Cyprus', 'Belize', 'Poland'
+  ];
+
   // Fetch data for BarChart
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`http://localhost:8000/barchart/?year=${selectedYearBar}&sector=${selectedSector}`)
+    fetch(`http://localhost:8000/barchart/?year=${selectedYearBar}&sector=${selectedSector}/`)
       .then((response) => {
         if (!response.ok) throw new Error('Network response was not ok');
         return response.json();
@@ -79,8 +96,22 @@ function App() {
       })
       .catch((error) => setError(error));
   }, [selectedTopic]);
-  
-  
+
+  // Fetch data for PieChart
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch(`http://localhost:8000/piechart/?country=${selectedCountry}`) // Add country filter
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then((data) => {
+        setPieChartData(data.data || []); // Assuming the API returns { data: [...] }
+        setLoading(false);
+      })
+      .catch((error) => setError(error));
+  }, [selectedCountry]); // Re-run effect when selectedCountry changes
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">Error: {error.message}</div>;
@@ -148,7 +179,28 @@ function App() {
         ) : (
           <div className="error">No data available for Radar Chart</div>
         )}
+      </Card>
 
+      {/* Pie Chart */}
+      <Card>
+        <div className="card-header">
+          <h2>Pestle Distribution</h2>
+          <select
+            className="country-select"
+            value={selectedCountry}
+            onChange={(e) => setSelectedCountry(e.target.value)}
+          >
+            <option value="">All Countries</option>
+            {countries.map((country, index) => (
+              <option key={index} value={country}>{country || 'Uncategorized'}</option>
+            ))}
+          </select>
+        </div>
+        {pieChartData.length > 0 ? (
+          <PieChart data={pieChartData} />
+        ) : (
+          <div className="error">No data available for Pie Chart</div>
+        )}
       </Card>
     </div>
   );

@@ -19,20 +19,20 @@ const BarChart = ({ data, labels }) => {
           {
             label: 'Relevance',
             data: data.relevance,
-            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(255, 205, 86, 0.9)',  // Bright yellow
+            borderColor: 'rgba(255, 205, 86, 1)',
             borderWidth: 1,
-            hoverBackgroundColor: 'rgba(75, 192, 192, 0.8)',
-            hoverBorderColor: 'rgba(75, 192, 192, 1)',
+            hoverBackgroundColor: 'rgba(255, 215, 0, 1)',
+            hoverBorderColor: 'rgba(255, 215, 0, 1)',
           },
           {
             label: 'Likelihood',
             data: data.likelihood,
-            backgroundColor: 'rgba(255, 99, 132, 0.6)',
-            borderColor: 'rgba(255, 99, 132, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.9)',  // Bright blue
+            borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1,
-            hoverBackgroundColor: 'rgba(255, 99, 132, 0.8)',
-            hoverBorderColor: 'rgba(255, 99, 132, 1)',
+            hoverBackgroundColor: 'rgba(30, 144, 255, 1)',
+            hoverBorderColor: 'rgba(30, 144, 255, 1)',
           },
         ],
       },
@@ -78,7 +78,6 @@ const BarChart = ({ data, labels }) => {
       <canvas ref={chartRef}></canvas>
     </div>
   );
-  
 };
 
 export default BarChart;
